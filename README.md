@@ -17,7 +17,7 @@ GitCrawler is a RESTful Webservice built on Spring Boot.
 <h2>How to use</h2>
 To use it, you just call the endpoint with a GitHub repository RUL:
 
-  http://localhost:8080/gitcrawler?url=<your_url>\
+  http://localhost:8080/gitcrawler?url=<your_url>
   
   
 For example:
