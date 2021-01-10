@@ -17,7 +17,7 @@ public class GitCrawlerController {
 	//The endpoint that receives the requests
 	//It's a GET method with one RequestParam, the url to the repository
 	@GetMapping("/gitcrawler")
-	public List<ExtensionData> gitCrawler(@RequestParam(value = "url", defaultValue = "https://github.com/tallison-cm/todo_list") String url) {
+	public List<ExtensionData> gitCrawler(@RequestParam(value = "url") String url) {
 		GitCrawlerService crawler = new GitCrawlerService();
 		List<ExtensionData> listED = new ArrayList<ExtensionData>();
 		try {

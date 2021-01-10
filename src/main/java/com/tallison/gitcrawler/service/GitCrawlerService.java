@@ -40,14 +40,19 @@ public class GitCrawlerService {
 	private void getFolder(List<String> linksToGo, List<ExtensionData> listED) throws IOException {
 		for(String link: linksToGo) {
 			
-			List<Object> linkResult = this.doGetRequest(link);
-			List<String> innerLinksToGo = this.getLinksToGo(linkResult);
+			try {
+				List<Object> linkResult = this.doGetRequest(link);
+				List<String> innerLinksToGo = this.getLinksToGo(linkResult);
 			
-			if(innerLinksToGo.size() == 0) {
-				ExtensionData ed = this.getExtensionData(linkResult, link);
-				this.addElement(listED, ed);
-			}else {
-				this.getFolder(innerLinksToGo, listED);
+				if(innerLinksToGo.size() == 0) {
+					ExtensionData ed = this.getExtensionData(linkResult, link);
+					this.addElement(listED, ed);
+				}else {
+					this.getFolder(innerLinksToGo, listED);
+				}
+				
+			}catch (Exception e) {
+				continue;
 			}
 		}
 	}
@@ -60,7 +65,7 @@ public class GitCrawlerService {
 		for(String link: rawLinksToGo) {
 			String start = "href=\"";
 			Integer hrefIndex = link.indexOf(start);
-			linksToGo.add("https://github.com" + link.substring(hrefIndex+start.length(), link.lastIndexOf("\"")));
+			linksToGo.add("https://github.com" + link.substring(hrefIndex+start.length(), link.indexOf("\"", hrefIndex+start.length())));
 		}
 		
 		return linksToGo;
