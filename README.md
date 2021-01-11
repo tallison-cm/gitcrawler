@@ -26,9 +26,9 @@ For example:
   
 Wich will return:
   
-  [{"name":"py","lines":377,"size":11568.0},{"name":"sqlite3","lines":0,"size":143360.0}]
+  [{"name":"py","lines":198,"size":5577.0},{"name":"sqlite3","lines":0,"size":143360.0}]
  
 <h3>AWS</h3>
 There is a service running on AWS, so you just need to run it in a browser
 
-  http://13.59.74.104:8080/gitcrawler?url=<your_url>
+  http://3.19.246.187:8080/gitcrawler?url=<your_url>
