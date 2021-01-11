@@ -19,7 +19,7 @@ public class GitCrawlerTest {
 	public void crawGithubTest() throws IOException, InterruptedException {
 		
 		List<ExtensionData> expectedResult = new ArrayList<ExtensionData>();
-		expectedResult.add(new ExtensionData("py", 377, 11568.0));
+		expectedResult.add(new ExtensionData("py", 198, 5577.0));
 		expectedResult.add(new ExtensionData("sqlite3", 0, 143360.0));
 
 		List<ExtensionData> result = this.service.getRepository("https://github.com/tallison-cm/todo_list");
