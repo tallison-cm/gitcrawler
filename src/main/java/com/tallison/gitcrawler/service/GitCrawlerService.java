@@ -6,10 +6,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.tallison.gitcrawler.GitCrawlerServiceApplication;
 import com.tallison.gitcrawler.model.ExtensionData;
 import com.tallison.gitcrawler.util.SizeConverter;
 
@@ -17,11 +20,19 @@ public class GitCrawlerService {
 	
 	//Method for making requests on GitHub
 	private List<Object> doGetRequest(String url) throws IOException{
+		if( GitCrawlerServiceApplication.cache.containsKey(url) ) {
+			List<Object> cachedResult = GitCrawlerServiceApplication.cache.get(url).orElse(null);
+			if( cachedResult != null)
+				return cachedResult;
+		}
+		
 		URL urlObj = new URL(url);
 		HttpURLConnection connection = (HttpURLConnection) urlObj.openConnection();
 		InputStream responseStream = connection.getInputStream();
 		
 		List<Object> result = new BufferedReader(new InputStreamReader(responseStream)).lines().collect(Collectors.toList());
+		GitCrawlerServiceApplication.cache.put(url, result);
+		
 		return result;
 	}
 	
@@ -60,20 +71,43 @@ public class GitCrawlerService {
 	//A parser to transform the result of the request into a list of links
 	private List<String> getLinksToGo(List<Object> resultPage) {
 		List<String> rawLinksToGo = resultPage.stream().map( o -> (String) o ).filter( o -> o.contains("href") && o.contains("js-navigation-open link-gray-dark") ).collect(Collectors.toList());
+		List<String> rawLastTime = resultPage.stream().map( o -> (String) o ).filter( o -> o.contains("datetime") ).collect(Collectors.toList());
 		List<String> linksToGo = new ArrayList<String>();
 		
+		Integer idx = 0;
 		for(String link: rawLinksToGo) {
-			String start = "href=\"";
-			Integer hrefIndex = link.indexOf(start);
-			linksToGo.add("https://github.com" + link.substring(hrefIndex+start.length(), link.indexOf("\"", hrefIndex+start.length())));
+			
+			if( rawLastTime.size() > 0 ) {
+				String lastUpd = rawLastTime.get(idx);
+				this.verifyTimeInCache(link, lastUpd);
+			}
+			
+			String startHref = "href=\"";
+			Integer hrefIndex = link.indexOf(startHref);
+			linksToGo.add("https://github.com" + link.substring(hrefIndex+startHref.length(), link.indexOf("\"", hrefIndex+startHref.length())));
+			
+			idx+=1;
 		}
 		
 		return linksToGo;
 	}
 	
+	//Method that checks whether the file has been updated recently. If it has been updated, the key is removed from the cache
+	private void verifyTimeInCache(String link, String lastUpd) {
+		String startLastUpd = "datetime=\"";
+		Integer lastUpdIndex = lastUpd.indexOf(startLastUpd);
+		
+		String strDateTime = lastUpd.substring(lastUpdIndex+startLastUpd.length(), lastUpd.indexOf("\"", lastUpdIndex+startLastUpd.length()));
+		LocalDateTime dateTime = LocalDateTime.parse(strDateTime.replace("Z", ""));
+		
+		Long timeDiff = LocalDateTime.now().toEpochSecond(ZoneOffset.MAX) - dateTime.toEpochSecond(ZoneOffset.MAX);
+		if( timeDiff < GitCrawlerServiceApplication.DEFAULT_CACHE_TIMEOUT/100 )
+			GitCrawlerServiceApplication.cache.remove(link);
+	}
+	
 	//Method that, when reaching the end of a recursion, returns the number of lines and the file size in the class ExtensionData
-	private ExtensionData getExtensionData(List<Object> result, String gitToCrawl) {
-		String fileExt = this.getFileExtension(gitToCrawl);
+	private ExtensionData getExtensionData(List<Object> result, String fileUrl) {
+		String fileExt = this.getFileExtension(fileUrl);
 		Integer nLines = 0;
 		Double size = 0d;
 		
@@ -119,6 +153,17 @@ public class GitCrawlerService {
 			eed.setSize( (double) Math.round(eed.getSize() + ed.getSize()) );
 		}else
 			listED.add(ed);
+	}
+	
+	
+	public static void main(String[] args) throws IOException {
+		
+		GitCrawlerService service = new GitCrawlerService();
+		List<ExtensionData> ll = service.getRepository("https://github.com/tallison-cm/todo_list");
+		ll.forEach(System.out::println);
+		
+		List<ExtensionData> ll2 = service.getRepository("https://github.com/tallison-cm/todo_list");
+		ll2.forEach(System.out::println);
 	}
 	
 }
