@@ -146,24 +146,13 @@ public class GitCrawlerService {
 	}
 	
 	//Method to add and accumulate the number of lines and the size of files by extension
-	private void addElement(List<ExtensionData> listED, ExtensionData ed) {
-		ExtensionData eed = listED.stream().filter( o -> o.getName().equals(ed.getName()) ).findFirst().orElse(null);
-		if(eed != null) {
-			eed.setLines( eed.getLines() + ed.getLines() );
-			eed.setSize( (double) Math.round(eed.getSize() + ed.getSize()) );
+	private void addElement(List<ExtensionData> listED, ExtensionData new_ed) {
+		ExtensionData old_ed = listED.stream().filter( o -> o.getName().equals(new_ed.getName()) ).findFirst().orElse(null);
+		if(old_ed != null) {
+			old_ed.setLines( old_ed.getLines() + new_ed.getLines() );
+			old_ed.setSize( (double) Math.round(old_ed.getSize() + new_ed.getSize()) );
 		}else
-			listED.add(ed);
-	}
-	
-	
-	public static void main(String[] args) throws IOException {
-		
-		GitCrawlerService service = new GitCrawlerService();
-		List<ExtensionData> ll = service.getRepository("https://github.com/tallison-cm/todo_list");
-		ll.forEach(System.out::println);
-		
-		List<ExtensionData> ll2 = service.getRepository("https://github.com/tallison-cm/todo_list");
-		ll2.forEach(System.out::println);
+			listED.add(new_ed);
 	}
 	
 }
