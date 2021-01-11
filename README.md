@@ -12,10 +12,10 @@ GitCrawler is a RESTful Webservice built on Spring Boot.
 
 <h3>Docker</h3>
 1. Download the Docker image: docker pull tallisoncm/git-crawler:first <br>
-2. Run: docker run -p 8080:8080 git-crawler <br>
+2. Run: docker run -p 8080:8080 tallisoncm/git-crawler:first <br>
 
 <h2>How to use</h2>
-To use it, you just call the endpoint with a GitHub repository RUL:
+To use it, you just call the endpoint with a GitHub repository URL:
 
   http://localhost:8080/gitcrawler?url=<your_url>
   
@@ -24,7 +24,7 @@ For example:
 
   http://localhost:8080/gitcrawler?url=https://github.com/tallison-cm/todo_list
   
-Wich will return:
+Will return:
   
   [{"name":"py","lines":198,"size":5577.0},{"name":"sqlite3","lines":0,"size":143360.0}]
  
